@@ -29,12 +29,12 @@ typedef enum {
  *
  * @param led_pixel_offset Each pixel's offset
  * @param pixel_order `pixel_order` parameter in LED strip configuration
- * @param bytes_per_pixel bytes per pixel
+ * @param num_color_components Number of color components per LED pixel
  * @return
  *      - ESP_OK: Set LED color order successfully
  *      - ESP_ERR_INVALID_ARG: Set LED color order failed because of invalid argument
  */
-esp_err_t led_strip_set_color_order(uint8_t *led_pixel_offset, const uint8_t pixel_order, const uint8_t bytes_per_pixel);
+esp_err_t led_strip_set_color_order(uint8_t *led_pixel_offset, uint8_t pixel_order, uint8_t num_color_components);
 
 #ifdef __cplusplus
 }

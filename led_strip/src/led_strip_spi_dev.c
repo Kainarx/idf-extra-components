@@ -10,7 +10,6 @@
 #include "esp_check.h"
 #include "esp_rom_gpio.h"
 #include "soc/spi_periph.h"
-#include "hal/spi_hal.h"
 #include "led_strip.h"
 #include "led_strip_interface.h"
 #include "led_strip_common.h"
@@ -130,8 +129,14 @@ esp_err_t led_strip_new_spi_device(const led_strip_config_t *led_config, const l
     led_strip_spi_obj *spi_strip = NULL;
     esp_err_t ret = ESP_OK;
     ESP_GOTO_ON_FALSE(led_config && spi_config && ret_strip, ESP_ERR_INVALID_ARG, err, TAG, "invalid argument");
-    ESP_GOTO_ON_FALSE(led_config->bytes_per_pixel == 3 || led_config->bytes_per_pixel == 4, ESP_ERR_INVALID_ARG, err, TAG, "invalid led_pixel bytes");
-    uint8_t bytes_per_pixel = led_config->bytes_per_pixel;
+    // by default, each pixel should have at least 3 color components: R, G, B
+    uint8_t num_color_components = 3;
+    // but sometimes, there can be different number of components, e.g. RGBW
+    if (led_config->num_color_components) {
+        num_color_components = led_config->num_color_components;
+    }
+    // TODO: we assume each color component is 8 bits, may need to support other configurations in the future, e.g. 10bits per color component?
+    uint8_t bytes_per_pixel = num_color_components;
     uint32_t mem_caps = MALLOC_CAP_DEFAULT;
     if (spi_config->flags.with_dma) {
         // DMA buffer must be placed in internal SRAM
@@ -185,7 +190,8 @@ esp_err_t led_strip_new_spi_device(const led_strip_config_t *led_config, const l
     // clock_resolution between 2.2MHz to 2.8MHz is supported
     ESP_GOTO_ON_FALSE((clock_resolution_khz < LED_STRIP_SPI_DEFAULT_RESOLUTION / 1000 + 300) && (clock_resolution_khz > LED_STRIP_SPI_DEFAULT_RESOLUTION / 1000 - 300), ESP_ERR_NOT_SUPPORTED, err,
                       TAG, "unsupported clock resolution:%dKHz", clock_resolution_khz);
-    ESP_GOTO_ON_ERROR(led_strip_set_color_order(spi_strip->led_pixel_offset, led_config->pixel_order, bytes_per_pixel), err, TAG, "adjust color order failed");
+    ESP_GOTO_ON_ERROR(led_strip_set_color_order(spi_strip->led_pixel_offset, led_config->color_component_order, num_color_components),
+                      err, TAG, "set color component order failed");
 
     spi_strip->bytes_per_pixel = bytes_per_pixel;
     spi_strip->strip_len = led_config->max_leds;
