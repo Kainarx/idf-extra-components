@@ -1,3 +1,9 @@
+## 3.0.4
+
+- Add async refresh API, the next frame is free to be computed while the current frame is being transmitted.
+- Support to use custom timing config in RMT backend
+- Support to switch GPIO at runtime in RMT backend
+
 ## 3.0.3
 
 - Support WS2816 with 16-bit color
@@ -5,7 +11,7 @@
 ## 3.0.1
 
 - Support WS2811 bit timing
-
+  
 ## 3.0.0
 
 - Discontinued support for ESP-IDF v4.x
